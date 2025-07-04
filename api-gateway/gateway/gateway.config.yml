@@ -1,0 +1,73 @@
+http:
+  port: 8080
+
+apiEndpoints:
+  auth:
+    host: '*'
+    paths: '/auth/*'
+  users:
+    host: '*'
+    paths: '/users/*'
+  chats:
+    host: '*'
+    paths: '/chats/*'
+
+serviceEndpoints:
+  auth-service:
+    url: 'http://auth-service:3001'
+  user-service:
+    url: 'http://user-service:3003'
+  chat-service:
+    url: 'http://chat-service:3002'
+
+policies:
+  - cors
+  - expression
+  - proxy
+  - rate-limit
+
+pipelines:
+  auth-pipeline:
+    apiEndpoints:
+      - auth
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
+              allowedHeaders: 'Content-Type,Authorization'
+      - proxy:
+          - action:
+              serviceEndpoint: auth-service
+              changeOrigin: true
+              stripPath: true
+
+  users-pipeline:
+    apiEndpoints:
+      - users
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
+              allowedHeaders: 'Content-Type,Authorization'
+      - proxy:
+          - action:
+              serviceEndpoint: user-service
+              changeOrigin: true
+              stripPath: true
+
+  chats-pipeline:
+    apiEndpoints:
+      - chats
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
+              allowedHeaders: 'Content-Type,Authorization'
+      - proxy:
+          - action:
+              serviceEndpoint: chat-service
+              changeOrigin: true
+              stripPath: true

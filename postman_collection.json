@@ -1,0 +1,426 @@
+{
+	"info": {
+		"_postman_id": "chatapp-microservices",
+		"name": "Chat App Microservices",
+		"description": "Complete API collection for Node.js microservices chat application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "chat_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "User Registration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set(\"auth_token\", response.token);",
+									"    pm.collectionVariables.set(\"user_id\", response.user.id);",
+									"    pm.test(\"Registration successful\", function () {",
+									"        pm.expect(response.message).to.eql(\"User created successfully\");",
+									"        pm.expect(response.token).to.be.a(\"string\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"password123\",\n  \"name\": \"{{$randomFullName}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "User Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set(\"auth_token\", response.token);",
+									"    pm.collectionVariables.set(\"user_id\", response.user.id);",
+									"    pm.test(\"Login successful\", function () {",
+									"        pm.expect(response.message).to.eql(\"Login successful\");",
+									"        pm.expect(response.token).to.be.a(\"string\");",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test3@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Verify Token",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/verify",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "verify"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Management",
+			"item": [
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/profile",
+							"host": ["{{base_url}}"],
+							"path": ["users", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{$randomFullName}}\",\n  \"avatar\": \"https://api.dicebear.com/7.x/avataaars/svg?seed={{$randomInt}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/profile",
+							"host": ["{{base_url}}"],
+							"path": ["users", "profile"]
+						}
+					}
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/{{user_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["users", "{{user_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Search Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/search/test",
+							"host": ["{{base_url}}"],
+							"path": ["users", "search", "test"]
+						}
+					}
+				},
+				{
+					"name": "Sync User (Internal)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": \"{{user_id}}\",\n  \"email\": \"test@example.com\",\n  \"name\": \"Test User\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3003/sync/user",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3003",
+							"path": ["sync", "user"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Health Checks",
+			"item": [
+				{
+					"name": "Auth Service Health",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/auth/health",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "health"]
+						}
+					}
+				},
+				{
+					"name": "User Service Health",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/users/health",
+							"host": ["{{base_url}}"],
+							"path": ["users", "health"]
+						}
+					}
+				},
+				{
+					"name": "Chat Service Health",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/chats/health",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "health"]
+						}
+					}
+				},
+				{
+					"name": "Auth Service Direct",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:3001/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3001",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "User Service Direct",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:3003/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3003",
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Chat Service Direct",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "http://localhost:3002/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3002",
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Chat Management (Coming Soon)",
+			"item": [
+				{
+					"name": "Create Chat Room",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"General Chat\",\n  \"type\": \"GROUP\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/chats/rooms",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "rooms"]
+						}
+					}
+				},
+				{
+					"name": "Get User Chats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chats/rooms",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "rooms"]
+						}
+					}
+				},
+				{
+					"name": "Send Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"Hello, this is a test message!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/chats/rooms/:chatId/messages",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "rooms", ":chatId", "messages"],
+							"variable": [
+								{
+									"key": "chatId",
+									"value": "CHAT_ID_PLACEHOLDER"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Chat Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chats/rooms/:chatId/messages",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "rooms", ":chatId", "messages"],
+							"variable": [
+								{
+									"key": "chatId",
+									"value": "CHAT_ID_PLACEHOLDER"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}

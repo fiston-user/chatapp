@@ -1,0 +1,18 @@
+db:
+  redis:
+    host: redis
+    port: 6379
+    namespace: EG
+
+crypto:
+  cipherKey: changeThisKeyInProduction
+
+session:
+  secret: keyboard cat
+  resave: false
+  saveUninitialized: false
+
+cors:
+  origin: '*'
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
+  allowedHeaders: 'Content-Type,Authorization'

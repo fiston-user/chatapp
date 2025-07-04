@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Chat {
+  id          String   @id @default(cuid())
+  name        String?
+  type        ChatType @default(PRIVATE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  messages    Message[]
+  chatUsers   ChatUser[]
+  
+  @@map("chats")
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Foreign keys
+  userId      String
+  chatId      String
+  
+  // Relations
+  chat        Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  
+  @@map("messages")
+}
+
+model ChatUser {
+  id          String   @id @default(cuid())
+  joinedAt    DateTime @default(now())
+  
+  // Foreign keys
+  userId      String
+  chatId      String
+  
+  // Relations
+  chat        Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, chatId])
+  @@map("chat_users")
+}
+
+enum ChatType {
+  PRIVATE
+  GROUP
+}

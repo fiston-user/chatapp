@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    image: express-gateway:latest
+    ports:
+      - "3000:8080"
+    volumes:
+      - ./api-gateway/gateway:/var/lib/eg
+    depends_on:
+      - auth-service
+      - user-service
+      - chat-service
+    networks:
+      - chatapp-network
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://chatapp:chatapp_password@postgres-auth:5432/chatapp_auth?schema=public
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_EXPIRES_IN=24h
+    depends_on:
+      - postgres-auth
+    networks:
+      - chatapp-network
+
+  chat-service:
+    build: ./chat-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DATABASE_URL=postgresql://chatapp:chatapp_password@postgres-chats:5432/chatapp_chats?schema=public
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+    depends_on:
+      - postgres-chats
+    networks:
+      - chatapp-network
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - DATABASE_URL=postgresql://chatapp:chatapp_password@postgres-users:5432/chatapp_users?schema=public
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+    depends_on:
+      - postgres-users
+    networks:
+      - chatapp-network
+
+  postgres-auth:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=chatapp
+      - POSTGRES_PASSWORD=chatapp_password
+      - POSTGRES_DB=chatapp_auth
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    networks:
+      - chatapp-network
+
+  postgres-users:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=chatapp
+      - POSTGRES_PASSWORD=chatapp_password
+      - POSTGRES_DB=chatapp_users
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_users_data:/var/lib/postgresql/data
+    networks:
+      - chatapp-network
+
+  postgres-chats:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=chatapp
+      - POSTGRES_PASSWORD=chatapp_password
+      - POSTGRES_DB=chatapp_chats
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_chats_data:/var/lib/postgresql/data
+    networks:
+      - chatapp-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - chatapp-network
+
+volumes:
+  postgres_auth_data:
+  postgres_users_data:
+  postgres_chats_data:
+  redis_data:
+
+networks:
+  chatapp-network:
+    driver: bridge
